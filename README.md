@@ -1,4 +1,4 @@
-# 🎮 TIC TAC TOE PROJECT  
+# 🎮 TIC TAC TOE GAME
 
 A simple Tic Tac Toe game built using *HTML, CSS, and JavaScript* with DOM Manipulation for interactive gameplay.  
 
