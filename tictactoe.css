@@ -1,63 +1,387 @@
-*{
+/* ==========================================================================
+   TIC-TAC-TOE // TACTICAL BATCOMPUTER EDITION
+   ========================================================================== */
+:root {
+    --bg-base: #060609;
+    --bg-panel: rgba(18, 18, 26, 0.9);
+    --crimson: #ff0a16;
+    --crimson-glow: rgba(255, 10, 22, 0.45);
+    --amber: #ff9900;
+    --amber-glow: rgba(255, 153, 0, 0.45);
+    --cyan-win: #00ff88;
+    --text-main: #f5f5f7;
+    --text-muted: #8a8d9b;
+    --font-poster: 'Anton', Impact, sans-serif;
+    --font-hud: 'Rajdhani', sans-serif;
+    --font-mono: 'Share Tech Mono', monospace;
+}
+
+* {
     margin: 0;
     padding: 0;
+    box-sizing: border-box;
 }
-body{
-background-color: #9c9a65d7 ;
-text-align: center;
-} 
-.container{
-    height: 70vh; 
+
+body {
+    background-color: var(--bg-base);
+    color: var(--text-main);
+    font-family: var(--font-hud);
+    min-height: 100vh;
     display: flex;
-     
     justify-content: center;
     align-items: center;
+    text-align: center;
+    overflow-x: hidden;
+    background-image: 
+        radial-gradient(circle at 50% 15%, rgba(255, 10, 22, 0.14), transparent 60%),
+        linear-gradient(rgba(255, 10, 22, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 10, 22, 0.04) 1px, transparent 1px);
+    background-size: 100% 100%, 40px 40px, 40px 40px;
+    padding: 20px;
 }
-.game{
-    height: 60vmin;
-    width: 60vmin;
-    display: flex;
-    flex-wrap:wrap; 
-    justify-content: center;
-    align-items: center;
-    gap: 1.5vmin;
+
+/* Subtle CRT Scanline Overlay */
+.scanlines {
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+        to bottom,
+        transparent 0px,
+        transparent 2px,
+        rgba(0, 0, 0, 0.22) 3px,
+        rgba(0, 0, 0, 0.22) 4px
+    );
+    pointer-events: none;
+    z-index: 900;
+    opacity: 0.4;
 }
-.box{
-    height: 18vmin;
-    width: 18vmin;
-    background-color: #ac1a1a;
-    border-radius: 1rem;
+
+.sim-wrapper {
+    width: 100%;
+    max-width: 520px;
+    z-index: 2;
+}
+
+/* Header & Mode Toggle */
+.sys-tag {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--amber);
+    letter-spacing: 2px;
+    display: block;
+    margin-bottom: 4px;
+}
+
+h1 {
+    font-family: var(--font-poster);
+    font-size: clamp(2.4rem, 6vw, 3.4rem);
+    letter-spacing: 5px;
+    color: #ffffff;
+    text-shadow: 3px 3px 0px #7a0006, 0 0 25px var(--crimson-glow);
+    margin-bottom: 14px;
+}
+
+.mode-selector {
+    display: inline-flex;
+    background: #0d0d14;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    padding: 4px;
+    gap: 6px;
+    margin-bottom: 20px;
+}
+
+.mode-btn {
+    background: transparent;
     border: none;
-    box-shadow: 0 0 1rem rgba(234, 29, 11, 0.799);
-    font-size:  8vmin;
-    color: rgba(2, 21, 50, 0.662);
-} 
-#reset {
-  padding: 1rem;
-  font-size: 1.25rem;
-  background-color: #000000;
-  color:aliceblue;
-  border-radius: 1rem;
-  border: none;
-   
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    padding: 8px 16px;
+    cursor: pointer;
+    letter-spacing: 1px;
+    transition: all 0.25s ease;
 }
-#new{
-    padding: 1rem;
-  font-size: 1.25rem;
-  background-color: #000000;
-  color:aliceblue;
-  border-radius: 1rem;
-  border: none;
+
+.mode-btn.active {
+    background: var(--crimson);
+    color: #fff;
+    box-shadow: 0 0 15px var(--crimson-glow);
+}
+
+/* Scoreboard & Turn HUD */
+.hud-panel {
+    display: grid;
+    grid-template-columns: 1fr 1.1fr 1fr;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 22px;
+}
+
+.score-card {
+    background: var(--bg-panel);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 12px 10px;
+    transition: all 0.3s ease;
+    position: relative;
+    clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%);
+}
+
+.score-card.player-o.active-turn {
+    border-color: var(--amber);
+    box-shadow: 0 0 20px rgba(255, 153, 0, 0.25);
+    transform: translateY(-3px);
+}
+
+.score-card.player-x.active-turn {
+    border-color: var(--crimson);
+    box-shadow: 0 0 20px rgba(255, 10, 22, 0.3);
+    transform: translateY(-3px);
+}
+
+.player-label {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+}
+
+.score-num {
+    font-family: var(--font-poster);
+    font-size: 1.9rem;
+    line-height: 1.1;
+}
+
+.player-o .score-num { color: var(--amber); }
+.player-x .score-num { color: var(--crimson); }
+
+.turn-status {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.turn-tag {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    letter-spacing: 1.5px;
+}
+
+.turn-badge {
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    font-weight: bold;
+    padding: 5px 14px;
+    background: rgba(255, 153, 0, 0.12);
+    border: 1px solid var(--amber);
+    color: var(--amber);
+    letter-spacing: 1.5px;
+    transition: all 0.25s ease;
+}
+
+.draw-counter {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+/* 3x3 Tactical Game Grid */
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 10px 0 26px;
+}
+
+.game {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    width: min(78vw, 350px);
+    height: min(78vw, 350px);
+    padding: 14px;
+    background: rgba(12, 12, 18, 0.85);
+    border: 1px solid rgba(255, 10, 22, 0.3);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.8), inset 0 0 25px rgba(255, 10, 22, 0.08);
+}
+
+.box {
+    width: 100%;
+    height: 100%;
+    background-color: #12121a;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    font-family: var(--font-poster);
+    font-size: clamp(2.5rem, 8vmin, 3.6rem);
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
+}
+
+/* Hover Preview Effect on Empty Boxes */
+.box:not(:disabled):hover {
+    background-color: #1a1216;
+    border-color: var(--crimson);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(255, 10, 22, 0.22);
+}
+
+.box:not(:disabled):hover::after {
+    content: attr(data-hover);
+    opacity: 0.22;
+    color: var(--text-main);
+    font-size: 2.6rem;
+}
+
+.box:disabled {
+    cursor: default;
+}
+
+/* Player O & Player X Symbol Styling */
+.box.mark-o {
+    color: var(--amber);
+    border-color: rgba(255, 153, 0, 0.5);
+    text-shadow: 0 0 18px var(--amber-glow);
+    animation: popIn 0.22s ease-out;
+}
+
+.box.mark-x {
+    color: var(--crimson);
+    border-color: rgba(255, 10, 22, 0.5);
+    text-shadow: 0 0 18px var(--crimson-glow);
+    animation: popIn 0.22s ease-out;
+}
+
+/* Winning 3-in-a-Row Pulse Animation */
+.box.win-box {
+    background: rgba(0, 255, 136, 0.16) !important;
+    border-color: var(--cyan-win) !important;
+    color: var(--cyan-win) !important;
+    text-shadow: 0 0 20px var(--cyan-win) !important;
+    animation: winPulse 0.9s infinite alternate;
+}
+
+@keyframes popIn {
+    0% { transform: scale(0.6); opacity: 0.3; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes winPulse {
+    0% { transform: scale(1); box-shadow: 0 0 12px rgba(0, 255, 136, 0.3); }
+    100% { transform: scale(1.05); box-shadow: 0 0 26px rgba(0, 255, 136, 0.7); }
+}
+
+/* Bottom Controls & Buttons */
+.controls {
+    display: flex;
+    justify-content: center;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+.btn {
+    padding: 0.8rem 1.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.25s ease;
+    clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
+}
+
+.btn.primary {
+    background: var(--crimson);
+    color: #fff;
+    border-color: var(--crimson);
+    box-shadow: 0 0 20px var(--crimson-glow);
+}
+
+.btn.primary:hover {
+    background: #ff2933;
+    box-shadow: 0 0 30px var(--crimson);
+    transform: translateY(-2px);
+}
+
+.btn.secondary {
+    background: #14141d;
+    color: var(--text-main);
+}
+
+.btn.secondary:hover {
+    border-color: var(--amber);
+    color: var(--amber);
+}
+
+.btn.danger {
+    background: rgba(255, 10, 22, 0.08);
+    color: var(--crimson);
+    border-color: rgba(255, 10, 22, 0.35);
+}
+
+.btn.danger:hover {
+    background: var(--crimson);
+    color: #fff;
+}
+
+/* Winner / Draw Modal Overlay */
+.msg-Container {
+    position: fixed;
+    inset: 0;
+    background: rgba(4, 4, 7, 0.86);
+    backdrop-filter: blur(10px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    padding: 20px;
+    animation: fadeIn 0.3s ease;
+}
+
+.modal-card {
+    background: #0d0d14;
+    border: 1px solid var(--crimson);
+    border-top: 4px solid var(--crimson);
+    padding: 36px 32px;
+    max-width: 420px;
+    width: 100%;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9), 0 0 35px rgba(255, 10, 22, 0.25);
+    clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 18px 100%, 0 calc(100% - 18px));
+}
+
+.modal-stamp {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--amber);
+    letter-spacing: 2px;
+    display: block;
+    margin-bottom: 10px;
 }
 
 #msg {
-    color: #000000;
-    font-size: 8vmin;
+    font-family: var(--font-poster);
+    color: #ffffff;
+    font-size: clamp(1.8rem, 5vw, 2.5rem);
+    letter-spacing: 3px;
+    margin-bottom: 26px;
+    text-transform: uppercase;
+    text-shadow: 0 0 18px var(--crimson-glow);
 }
 
-.msg-Container {
-    height: 30vmin;
-}
 .hide {
-    display :none;
+    display: none !important;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
