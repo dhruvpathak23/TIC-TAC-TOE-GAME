@@ -3,41 +3,85 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TICTACTOE</title>
-    <link rel = 'stylesheet' href = "tictactoe.css">
+    <title>TIC-TAC-TOE // TACTICAL GRID SIMULATOR</title>
+    <!-- Google Fonts matching The Batman Portfolio -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Rajdhani:wght@600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="tictactoe.css">
 </head>
 <body>
-  <div class = "msg-Container hide">
-    <p id = "msg">Winner!</p>
-    <button id="neew">New-Match</button>
-  </div>
-    
-        <h1> Tic Tac Toe</h1>
-        
-         <div class = "container">
-          <div class = "game">
-            <button class="box"></button>
-            <button class="box"></button>
-            <button class="box"></button>
-            <button class="box"></button>
-            <button class="box"></button>
-            <button class="box"></button>
-            <button class="box"></button>
-            <button class="box"></button>
-            <button class="box"></button>
-            
-            
-            
 
-          </div>  
-           
-         </div>    
-         
-          
+    <!-- Background CRT Scanlines -->
+    <div class="scanlines"></div>
 
+    <!-- Winner / Draw Modal Overlay -->
+    <div class="msg-Container hide" id="modal-overlay">
+        <div class="modal-card">
+            <span class="modal-stamp">// SIMULATION CONCLUDED</span>
+            <p id="msg">Winner!</p>
+            <button id="neew" class="btn primary"><i class="fas fa-play"></i> New Match</button>
+        </div>
+    </div>
 
-    
-    <button id="reset">Re-Match</button>
- <script src= "tictactoe.js"></script>   
+    <main class="sim-wrapper">
+        <!-- Header & Mode Selector -->
+        <header class="sim-header">
+            <span class="sys-tag">// WAYNE TECH COMBAT MODULE #01</span>
+            <h1>TIC TAC TOE</h1>
+            
+            <div class="mode-selector">
+                <button id="mode-pvp" class="mode-btn active">
+                    <i class="fas fa-user-friends"></i> 2P Versus
+                </button>
+                <button id="mode-ai" class="mode-btn">
+                    <i class="fas fa-robot"></i> vs Batcomputer AI
+                </button>
+            </div>
+        </header>
+
+        <!-- Live Scoreboard & Turn HUD -->
+        <section class="hud-panel">
+            <div class="score-card player-o active-turn" id="card-o">
+                <span class="player-label" id="label-o">OPERATIVE O</span>
+                <span class="score-num" id="score-o">0</span>
+            </div>
+
+            <div class="turn-status">
+                <span class="turn-tag">ACTIVE TURN</span>
+                <div id="turn-display" class="turn-badge">O's MOVE</div>
+                <span class="draw-counter">DRAWS: <strong id="score-draw">0</strong></span>
+            </div>
+
+            <div class="score-card player-x" id="card-x">
+                <span class="player-label" id="label-x">OPERATIVE X</span>
+                <span class="score-num" id="score-x">0</span>
+            </div>
+        </section>
+
+        <!-- 3x3 Tactical Grid -->
+        <div class="container">
+            <div class="game" id="board">
+                <button class="box" data-index="0"></button>
+                <button class="box" data-index="1"></button>
+                <button class="box" data-index="2"></button>
+                <button class="box" data-index="3"></button>
+                <button class="box" data-index="4"></button>
+                <button class="box" data-index="5"></button>
+                <button class="box" data-index="6"></button>
+                <button class="box" data-index="7"></button>
+                <button class="box" data-index="8"></button>
+            </div>
+        </div>
+
+        <!-- Bottom Action Controls -->
+        <div class="controls">
+            <button id="reset" class="btn secondary"><i class="fas fa-sync-alt"></i> Re-Match Board</button>
+            <button id="clear-scores" class="btn danger"><i class="fas fa-trash-alt"></i> Wipe Scores</button>
+        </div>
+    </main>
+
+    <script src="tictactoe.js"></script>
 </body>
-</html> 
+</html>
