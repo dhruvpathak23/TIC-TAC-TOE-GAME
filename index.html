@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TIC-TAC-TOE // TACTICAL GRID SIMULATOR</title>
-    <!-- Google Fonts matching The Batman Portfolio -->
+    <title>TIC-TAC-TOE // MINIMAX & QUEUE TACTICAL SIMULATOR</title>
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Anton&family=Rajdhani:wght@600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
@@ -21,15 +21,15 @@
         <div class="modal-card">
             <span class="modal-stamp">// SIMULATION CONCLUDED</span>
             <p id="msg">Winner!</p>
-            <button id="neew" class="btn primary"><i class="fas fa-play"></i> New Match</button>
+            <button id="neew" class="btn primary"><i class="fas fa-play"></i> New Match [R]</button>
         </div>
     </div>
 
     <main class="sim-wrapper">
-        <!-- Header & Mode Selector -->
+        <!-- Top Bar & Audio Toggle -->
         <header class="sim-header">
             <div class="sim-top-bar">
-                <span class="sys-tag">// WAYNE TECH COMBAT MODULE #01</span>
+                <span class="sys-tag">// WAYNE TECH DSA & GAME THEORY MODULE #01</span>
                 <button id="sound-toggle" class="sound-btn" aria-label="Toggle Sound">
                     <i class="fas fa-volume-up" id="sound-icon"></i>
                     <span id="sound-label">SFX: ON</span>
@@ -37,14 +37,36 @@
             </div>
             
             <h1>TIC TAC TOE</h1>
-            
-            <div class="mode-selector">
-                <button id="mode-pvp" class="mode-btn active">
-                    <i class="fas fa-user-friends"></i> 2P Versus
-                </button>
-                <button id="mode-ai" class="mode-btn">
-                    <i class="fas fa-robot"></i> vs Batcomputer AI
-                </button>
+
+            <!-- Tactical Control Matrix: Mode, AI Difficulty & Rule Set -->
+            <div class="config-matrix">
+                <!-- Opponent Toggle -->
+                <div class="mode-selector">
+                    <button id="mode-ai" class="mode-btn active" title="1v1 against Batcomputer AI">
+                        <i class="fas fa-robot"></i> vs Bat-AI
+                    </button>
+                    <button id="mode-pvp" class="mode-btn" title="2-Player Local Pass & Play">
+                        <i class="fas fa-user-friends"></i> 2P Local
+                    </button>
+                </div>
+
+                <!-- AI Difficulty Selector (Minimax) -->
+                <div class="mode-selector" id="ai-diff-group">
+                    <button class="mode-btn diff-btn" data-diff="easy" title="Random Scout AI">SCOUT</button>
+                    <button class="mode-btn diff-btn" data-diff="medium" title="1-Step Block & Win AI">TACTICAL</button>
+                    <button class="mode-btn diff-btn active" data-diff="hard" title="Unbeatable Recursive Minimax Backtracking AI">MINIMAX</button>
+                </div>
+
+                <!-- Rule Set: Classic vs Infinite FIFO Queue + Blitz Timer -->
+                <div class="mode-selector">
+                    <button id="rule-classic" class="mode-btn active" title="Standard 3x3 Rules">CLASSIC</button>
+                    <button id="rule-infinite" class="mode-btn" title="FIFO Queue Mode: Max 3 marks per player (4th mark erases 1st!)">
+                        <i class="fas fa-infinity"></i> INFINITE (FIFO)
+                    </button>
+                    <button id="toggle-blitz" class="mode-btn" title="Toggle 5-Second Shot Clock Timer">
+                        <i class="fas fa-bolt"></i> BLITZ: OFF
+                    </button>
+                </div>
             </div>
         </header>
 
@@ -56,36 +78,66 @@
             </div>
 
             <div class="turn-status">
-                <span class="turn-tag">ACTIVE TURN</span>
+                <span class="turn-tag" id="rule-readout">MINIMAX ENGINE ACTIVE</span>
                 <div id="turn-display" class="turn-badge">O's MOVE</div>
                 <span class="draw-counter">DRAWS: <strong id="score-draw">0</strong></span>
             </div>
 
             <div class="score-card player-x" id="card-x">
-                <span class="player-label" id="label-x">OPERATIVE X</span>
+                <span class="player-label" id="label-x">BAT-AI (X)</span>
                 <span class="score-num" id="score-x">0</span>
             </div>
         </section>
 
-        <!-- 3x3 Tactical Grid -->
-        <div class="container">
-            <div class="game" id="board">
-                <button class="box" data-index="0"></button>
-                <button class="box" data-index="1"></button>
-                <button class="box" data-index="2"></button>
-                <button class="box" data-index="3"></button>
-                <button class="box" data-index="4"></button>
-                <button class="box" data-index="5"></button>
-                <button class="box" data-index="6"></button>
-                <button class="box" data-index="7"></button>
-                <button class="box" data-index="8"></button>
+        <!-- Live Minimax Win-Probability Evaluation Bar & Blitz Shot Clock -->
+        <div class="telemetry-bars">
+            <div class="eval-bar-wrapper" title="Live Minimax Mathematical Advantage">
+                <span class="eval-label">EVAL // <strong id="eval-text">EVEN (0.0)</strong></span>
+                <div class="eval-track">
+                    <div class="eval-fill-o" id="eval-fill-o" style="width: 50%;"></div>
+                </div>
+            </div>
+
+            <div class="blitz-bar-wrapper hide" id="blitz-wrapper">
+                <div class="blitz-fill" id="blitz-fill"></div>
             </div>
         </div>
 
-        <!-- Bottom Action Controls -->
+        <!-- 3x3 Tactical Grid + SVG Laser Strike-Through -->
+        <div class="container">
+            <div class="game-board-wrapper">
+                <div class="game" id="board">
+                    <button class="box" data-index="0"><span class="key-num">1</span><span class="mark"></span></button>
+                    <button class="box" data-index="1"><span class="key-num">2</span><span class="mark"></span></button>
+                    <button class="box" data-index="2"><span class="key-num">3</span><span class="mark"></span></button>
+                    <button class="box" data-index="3"><span class="key-num">4</span><span class="mark"></span></button>
+                    <button class="box" data-index="4"><span class="key-num">5</span><span class="mark"></span></button>
+                    <button class="box" data-index="5"><span class="key-num">6</span><span class="mark"></span></button>
+                    <button class="box" data-index="6"><span class="key-num">7</span><span class="mark"></span></button>
+                    <button class="box" data-index="7"><span class="key-num">8</span><span class="mark"></span></button>
+                    <button class="box" data-index="8"><span class="key-num">9</span><span class="mark"></span></button>
+                </div>
+
+                <!-- Animated SVG Laser Strike-Through Overlay -->
+                <svg class="win-laser-svg" viewBox="0 0 300 300" id="laser-svg">
+                    <line id="laser-line" x1="0" y1="0" x2="0" y2="0" />
+                </svg>
+            </div>
+        </div>
+
+        <p class="Queue-hint" id="queue-hint">KEYS [1-9] TO DEPLOY // [U] REWIND STACK // [R] REMATCH</p>
+
+        <!-- Bottom Action Controls (With Stack Undo) -->
         <div class="controls">
-            <button id="reset" class="btn secondary"><i class="fas fa-sync-alt"></i> Re-Match Board</button>
-            <button id="clear-scores" class="btn danger"><i class="fas fa-trash-alt"></i> Wipe Scores</button>
+            <button id="undo-btn" class="btn secondary" disabled>
+                <i class="fas fa-undo-alt"></i> Rewind [U]
+            </button>
+            <button id="reset" class="btn secondary">
+                <i class="fas fa-sync-alt"></i> Re-Match [R]
+            </button>
+            <button id="clear-scores" class="btn danger">
+                <i class="fas fa-trash-alt"></i> Wipe Logs
+            </button>
         </div>
     </main>
 
